@@ -4,11 +4,11 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Set up Express app to handle data parsing
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
-let notes = require("./db/db.json");
+let note = require("./db/db.json");
 
 // Routes
 app.get("/notes", function (req, res) {
@@ -22,13 +22,8 @@ app.get("/api/notes", function (req, res) {
       console.log(err);
       return;
     }
-    res.json(notes);
+    res.json("./db/db.json");
   });
-});
-
-// Starts server to begin listening
-app.listen(PORT, function () {
-  console.log("App listening on PORT " + PORT);
 });
 
 // Create new note
@@ -40,10 +35,10 @@ app.post("/api/notes", function (req, res) {
     title: req.body.title,
     text: req.body.text,
   };
-  console.log(typeof notes);
-  notes.push(newNote);
-  const stringifyNote = JSON.stringify(notes);
-  res.json(notes);
+  console.log(typeof note);
+  note.push(newNote);
+  const stringifyNote = JSON.stringify(note);
+  res.json(note);
   fs.writeFile("./db/db.json", stringifyNote, (err) => {
     if (err) console.log(err);
     else {
@@ -61,7 +56,7 @@ app.delete("/api/notes/:id", function (req, res) {
       console.log("noteID", noteID);
       return note.id !== noteID;
     });
-    notes = updatedNotes;
+    note = updatedNotes;
     const stringifyNote = JSON.stringify(updatedNotes);
     fs.writeFile("./db/db.json", stringifyNote, (err) => {
       if (err) console.log(err);
@@ -75,4 +70,9 @@ app.delete("/api/notes/:id", function (req, res) {
 
 app.get("*", function (req, res) {
   res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
+// Starts server to begin listening
+app.listen(PORT, function () {
+  console.log(`App is live on http://localhost:${PORT}/`);
 });
