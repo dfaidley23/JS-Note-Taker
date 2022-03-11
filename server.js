@@ -14,57 +14,58 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Routes
-app.get("/notes", function (req, res) {
+app.get("/notes", (req, res) => {
   res.sendFile(path.join(__dirname, "public/notes.html"));
 });
 
 // Display notes
-app.get("/api/notes", function (req, res) {
-    res.sendFile(path.join(__dirname, "./db/db.json"));
-});
-
-app.get("*", function (req, res) {
-  res.sendFile(path.join(__dirname, "public/index.html"));
+app.get("/api/notes", (req, res) => {
+  readFromFile('./db/db.json').then((data) => res.json(JSON.parse(data)));
 });
 
 // Create new note
 app.post("/api/notes", (req, res) => {
-  console.log(req.body);
-
-  const {title, text } = req.body;
-
-  if (req.body) {
-    const newNote = {
-      title,
-      text,
-    };
-
-    readAndAppend(newNote, './db/db.json');
-    res.json(`Note successfully saved to db.json`);
-  } else {
-    res.error('Error in adding note');
-  }
-});
+    console.log(req.body);
+    let randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  
+    const { id, title, text } = req.body;
+  
+    if (req.body) {
+      const newNote = {
+        title,
+        text,
+        id: randLetter + Date.now(),
+      };
+  
+      readAndAppend(newNote, './db/db.json');
+      res.json(`Note successfully saved to db.json`);
+    } else {
+      res.error('Error in adding note');
+    }
+  });
 
 // Delete note
 app.delete('/api/notes/:id', (req, res) => {
-  const noteTitle = req.params.title;
-  readFromFile('./db/db.json')
-    .then((data) => JSON.parse(data))
-    .then((json) => {
-      // Make a new array of all tips except the one with the ID provided in the URL
-      const result = json.filter((note) => note.title !== noteTitle);
+    const noteID = req.params.id;
+    readFromFile('./db/db.json')
+      .then((data) => JSON.parse(data))
+      .then((json) => {
+        // Make a new array of all tips except the one with the ID provided in the URL
+        const result = json.filter((note) => note.id !== noteID);
+  
+        // Save that array to the filesystem
+        writeToFile('./db/db.json', result);
+  
+        // Respond to the DELETE request
+        res.json(`Item ${noteID} has been deleted 🗑️`);
+      });
+  });
 
-      // Save that array to the filesystem
-      writeToFile('./db/db.json', result);
-
-      // Respond to the DELETE request
-      res.json(`Item ${noteTitle} has been deleted 🗑️`);
-    });
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-
 // Starts server to begin listening
-app.listen(PORT, function () {
+app.listen(PORT, () => {
   console.log(`App is live on http://localhost:${PORT}/`);
 });
