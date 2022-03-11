@@ -35,7 +35,6 @@ app.post("/api/notes", function (req, res) {
     title: req.body.title,
     text: req.body.text,
   };
-  console.log(typeof note);
   note.push(newNote);
   const stringifyNote = JSON.stringify(note);
   res.json(note);
@@ -50,10 +49,8 @@ app.post("/api/notes", function (req, res) {
 // Delete note
 app.delete("/api/notes/:id", function (req, res) {
   let noteID = req.params.id;
-  fs.readFile("./db/db.json", "utf8", function (err, data) {
+  fs.readFile("./db/db.json",  function (err, data) {
     let updatedNotes = JSON.parse(data).filter((note) => {
-      console.log("note.id", note.id);
-      console.log("noteID", noteID);
       return note.id !== noteID;
     });
     note = updatedNotes;
