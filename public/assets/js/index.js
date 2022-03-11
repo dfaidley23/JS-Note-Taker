@@ -156,6 +156,7 @@ const renderNoteList = async (notes) => {
 
   if (jsonNotes.length === 0) {
     noteListItems.push(createLi('No saved Notes', false));
+  }
 
   jsonNotes.forEach((note) => {
     const li = createLi(note.title);
@@ -167,7 +168,7 @@ const renderNoteList = async (notes) => {
   if (window.location.pathname === '/notes') {
     noteListItems.forEach((note) => noteList[0].append(note));
   }
-}};
+};
 
 // Gets notes from the db and renders them to the sidebar
 const getAndRenderNotes = () => getNotes().then(renderNoteList);
