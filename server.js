@@ -1,9 +1,12 @@
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 3001;
-let note = require("./db/db.json");
+const {
+  readFromFile,
+  readAndAppend,
+  writeToFile,
+} = require('./helpers/fsUtils');
 
 
 app.use(express.urlencoded({ extended: true }));
@@ -25,42 +28,39 @@ app.get("*", function (req, res) {
 });
 
 // Create new note
-app.post("/api/notes", function (req, res) {
-  let randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-  let id = randLetter + Date.now();
-  let newNote = {
-    id: id,
-    title: req.body.title,
-    text: req.body.text,
-  };
-  note.push(newNote);
-  const stringifyNote = JSON.stringify(note);
-  res.json(note);
-  fs.writeFile("./db/db.json", stringifyNote, (err) => {
-    if (err) console.log(err);
-    else {
-      console.log("Note successfully saved to db.json");
-    }
-  });
+app.post("/api/notes", (req, res) => {
+  console.log(req.body);
+
+  const {title, text } = req.body;
+
+  if (req.body) {
+    const newNote = {
+      title,
+      text,
+    };
+
+    readAndAppend(newNote, './db/db.json');
+    res.json(`Note successfully saved to db.json`);
+  } else {
+    res.error('Error in adding note');
+  }
 });
 
 // Delete note
-app.delete("/api/notes/:id", function (req, res) {
-  let noteID = req.params.id;
-  fs.readFile("./db/db.json",  function (err, data) {
-    let updatedNotes = JSON.parse(data).filter((note) => {
-      return note.id !== noteID;
+app.delete('/api/notes/:id', (req, res) => {
+  const noteTitle = req.params.title;
+  readFromFile('./db/db.json')
+    .then((data) => JSON.parse(data))
+    .then((json) => {
+      // Make a new array of all tips except the one with the ID provided in the URL
+      const result = json.filter((note) => note.title !== noteTitle);
+
+      // Save that array to the filesystem
+      writeToFile('./db/db.json', result);
+
+      // Respond to the DELETE request
+      res.json(`Item ${noteTitle} has been deleted 🗑️`);
     });
-    note = updatedNotes;
-    const stringifyNote = JSON.stringify(updatedNotes);
-    fs.writeFile("./db/db.json", stringifyNote, (err) => {
-      if (err) console.log(err);
-      else {
-        console.log("Note successfully deleted from db.json");
-      }
-    });
-    res.json(stringifyNote);
-  });
 });
 
 
