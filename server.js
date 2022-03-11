@@ -3,12 +3,12 @@ const path = require("path");
 const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 3001;
+let note = require("./db/db.json");
 
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
-let note = require("./db/db.json");
 
 // Routes
 app.get("/notes", function (req, res) {
@@ -17,13 +17,11 @@ app.get("/notes", function (req, res) {
 
 // Display notes
 app.get("/api/notes", function (req, res) {
-  fs.readFile("./db/db.json", "utf8", function (err, data) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    res.json("./db/db.json");
-  });
+    res.sendFile(path.join(__dirname, "./db/db.json"));
+});
+
+app.get("*", function (req, res) {
+  res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
 // Create new note
@@ -65,9 +63,6 @@ app.delete("/api/notes/:id", function (req, res) {
   });
 });
 
-app.get("*", function (req, res) {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
 
 // Starts server to begin listening
 app.listen(PORT, function () {
