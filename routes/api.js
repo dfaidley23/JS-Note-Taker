@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const fs = require('fs');
+// const fs = require('fs');
 const db = require('../db/db.json')
 const {
   readFromFile,
@@ -15,15 +15,14 @@ router.get("/notes", (req, res) => {
 // Create new note
 router.post("/notes", (req, res) => {
     let randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    const {title, text, id} = req.params;
+    const {title, text, id} = req.body;
   
-    if (req.params) {
+    if (req.body) {
       const newNote = {
         title,
         text,
         id: randLetter + Date.now(),
       };
-  
       readAndAppend(newNote, '../db/db.json');
       res.json("Note successfully saved to db.json");
     } else {
@@ -33,7 +32,7 @@ router.post("/notes", (req, res) => {
 
 // Delete note
 router.delete("/notes/:id", (req, res) => {
-    const noteId = req.params.id;
+    const noteId = req.body.id;
     readFromFile("../db/db.json")
       .then((data) => JSON.parse(data))
       .then((json) => {
