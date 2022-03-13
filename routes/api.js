@@ -1,11 +1,12 @@
 const router = require('express').Router();
-// const fs = require('fs');
+const fs = require('fs');
 const db = require('../db/db.json')
-const {
-  readFromFile,
-  readAndAppend,
-  writeToFile,
-} = require("../helpers/fsUtils.js");
+const path = require("path");
+// const {
+//   readFromFile,
+//   readAndAppend,
+//   writeToFile,
+// } = require("../helpers/fsUtils.js");
 
 // // Display notes
 router.get("/notes", (req, res) => {
@@ -32,19 +33,33 @@ router.post("/notes", (req, res) => {
 
 // Delete note
 router.delete("/notes/:id", (req, res) => {
-    const noteId = req.body.id;
-    readFromFile("../db/db.json")
-      .then((data) => JSON.parse(data))
-      .then((json) => {
-        // Make a new array of all tips except the one with the ID provided in the URL
-        const result = json.filter((note) => note.id !== noteId);
+    const noteId = req.params.id;
+    fs.readFile('../db/db.json', "utf-8", (err, data) => {
+        if (err) throw err;
+        let result = JSON.parse(data);
+
+        for (let i = 0; i < result.length; i++) {
+            if (noteId == result[i].id) {
+                result.splice(i, 1);
+                fs.writeFile('../db/db.json'), JSON.stringify(result), (err) => {
+                    if (err) throw err;
+                };
+            };
+            
+        };
+    });
+    //   .then((data) => JSON.parse(data))
+    //   .then((json) => {
+    //     // Make a new array of all tips except the one with the ID provided in the URL
+    //     const result = json.filter((note) => note.id !== noteId);
   
-        // Save that array to the filesystem
-        writeToFile('../db/db.json', result);
+    //     // Save that array to the filesystem
+    //     writeToFile('../db/db.json', result);
   
-        // Respond to the DELETE request
-        res.json(`Item ${noteId} has been deleted 🗑️`);
-      });
+    //     // Respond to the DELETE request
+    //     res.json(`Item ${noteId} has been deleted 🗑️`);
+    //   });
+    res.json(`Item ${noteId} has been deleted`)
 });
 
 module.exports = router
