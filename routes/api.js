@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const fs = require('fs');
 
-// respond with JSON data from db.json when /notes api is called with GET
+// sending the Notes data when the API is called
 router.get('/notes', (req, res) => {
     fs.readFile('./db/db.json', 'utf-8', (error, data) => {
         if (error) throw error;
@@ -9,7 +9,7 @@ router.get('/notes', (req, res) => {
     });
 });
 
-// read and post data to db.json when /notes api is called with POST
+// Displaying the notes on that page
 router.post('/notes', (req, res) => {
     fs.readFile('./db/db.json', 'utf-8', (error, data) => {
         if (error) throw error;
@@ -23,13 +23,12 @@ router.post('/notes', (req, res) => {
     res.end();
 });
 
+// deleting notes from the db
 router.delete('/notes/:id', (req, res) => {
-    // get id from passed in data
     const tobe = req.params.id;
     fs.readFile('./db/db.json', 'utf-8', (error, data) => {
         if (error) throw error;
         let working = JSON.parse(data);
-        // cycle through list of note ids to see if any match - if so splice
         for (let i = 0; i < working.length; i++) {
             if (tobe == working[i].id) {
                 working.splice(i,1);
