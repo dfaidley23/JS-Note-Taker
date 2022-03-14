@@ -1,65 +1,46 @@
 const router = require('express').Router();
 const fs = require('fs');
-const db = require('../db/db.json')
-const path = require("path");
-// const {
-//   readFromFile,
-//   readAndAppend,
-//   writeToFile,
-// } = require("../helpers/fsUtils.js");
 
-// // Display notes
-router.get("/notes", (req, res) => {
-    res.send(db)
+// respond with JSON data from db.json when /notes api is called with GET
+router.get('/notes', (req, res) => {
+    fs.readFile('./db/db.json', 'utf-8', (error, data) => {
+        if (error) throw error;
+        res.json(JSON.parse(data));
+    });
 });
 
-// Create new note
-router.post("/notes", (req, res) => {
-    let randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    const {title, text, id} = req.body;
-  
-    if (req.body) {
-      const newNote = {
-        title,
-        text,
-        id: randLetter + Date.now(),
-      };
-      readAndAppend(newNote, '../db/db.json');
-      res.json("Note successfully saved to db.json");
-    } else {
-      res.error("Error in adding note");
-    }
+// read and post data to db.json when /notes api is called with POST
+router.post('/notes', (req, res) => {
+    fs.readFile('./db/db.json', 'utf-8', (error, data) => {
+        if (error) throw error;
+        let working = JSON.parse(data);
+        working.push(req.body);
+
+        fs.writeFile('./db/db.json', JSON.stringify(working), (error) => {
+            if (error) return error;
+        });
+    });
+    res.end();
 });
 
-// Delete note
-router.delete("/notes/:id", (req, res) => {
-    const noteId = req.params.id;
-    fs.readFile('../db/db.json', "utf-8", (err, data) => {
-        if (err) throw err;
-        let result = JSON.parse(data);
-
-        for (let i = 0; i < result.length; i++) {
-            if (noteId == result[i].id) {
-                result.splice(i, 1);
-                fs.writeFile('../db/db.json'), JSON.stringify(result), (err) => {
-                    if (err) throw err;
-                };
+router.delete('/notes/:id', (req, res) => {
+    // get id from passed in data
+    const tobe = req.params.id;
+    fs.readFile('./db/db.json', 'utf-8', (error, data) => {
+        if (error) throw error;
+        let working = JSON.parse(data);
+        // cycle through list of note ids to see if any match - if so splice
+        for (let i = 0; i < working.length; i++) {
+            if (tobe == working[i].id) {
+                working.splice(i,1);
+                fs.writeFile('./db/db.json', JSON.stringify(working), (error) => {
+                    if (error) throw error;
+                });
             };
             
         };
     });
-    //   .then((data) => JSON.parse(data))
-    //   .then((json) => {
-    //     // Make a new array of all tips except the one with the ID provided in the URL
-    //     const result = json.filter((note) => note.id !== noteId);
-  
-    //     // Save that array to the filesystem
-    //     writeToFile('../db/db.json', result);
-  
-    //     // Respond to the DELETE request
-    //     res.json(`Item ${noteId} has been deleted 🗑️`);
-    //   });
-    res.json(`Item ${noteId} has been deleted`)
+    res.end();
 });
 
-module.exports = router
+module.exports = router;

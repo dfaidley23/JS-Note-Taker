@@ -53,14 +53,11 @@ const deleteNote = (id) =>
 const renderActiveNote = () => {
   hide(saveNoteBtn);
 
+  // removed readonly attribute - notes should have edit feature
   if (activeNote.id) {
-    noteTitle.setAttribute('readonly', true);
-    noteText.setAttribute('readonly', true);
     noteTitle.value = activeNote.title;
     noteText.value = activeNote.text;
   } else {
-    noteTitle.removeAttribute('readonly');
-    noteText.removeAttribute('readonly');
     noteTitle.value = '';
     noteText.value = '';
   }
@@ -70,6 +67,8 @@ const handleNoteSave = () => {
   const newNote = {
     title: noteTitle.value,
     text: noteText.value,
+    // created ID and added random number generator with enough digits to prevent repeats
+    id: (Math.floor(Math.random() * 100000)),
   };
   saveNote(newNote).then(() => {
     getAndRenderNotes();
@@ -90,6 +89,7 @@ const handleNoteDelete = (e) => {
   }
 
   deleteNote(noteId).then(() => {
+    console.log(`we made it past the then statement`);
     getAndRenderNotes();
     renderActiveNote();
   });

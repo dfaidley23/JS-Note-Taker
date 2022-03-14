@@ -1,23 +1,19 @@
-const express = require("express");
-const path = require("path");
-const app = express();
-// const fs = require("fs");
-let api = require("./routes/api.js")
-let html = require("./routes/html.js")
-
+const express = require('express');
+const api = require('./routes/api');
+const html = require('./routes/html');
 const PORT = process.env.PORT || 3001;
+const app = express();
 
-app.use("/api", api)
-app.use("/", html)
-app.use(express.json());
+// Middleware for parsing JSON and urlencoded form data
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
+app.use(express.json());
+app.use(express.static('public'));
 
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "./public/index.html"));
-});
+// use routes
+app.use('/api', api);
+app.use('/', html);
 
-// Starts server to begin listening
-app.listen(PORT, () => {
-  console.log(`App is live on http://localhost:${PORT}/`);
-});
+// Listen for connections
+app.listen(PORT, () =>
+console.log(`App listening at http://localhost:${PORT}`)
+);
